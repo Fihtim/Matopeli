@@ -1,0 +1,154 @@
+####################################################################
+# COMP.CS.110 Programming 2: Structures, 2022                      #
+#                                                                  #
+# Project4: Snake                                                  #
+# Documentation					                   #
+#                                                                  #
+# File: instructions.txt                                           #
+#                                                                  #
+# Author:                                                          #
+#   First name: Fitim                                              #
+#   Last name: Abazi                                               #
+#   Student id: 150417967                                          #
+#   E-mail: fitim.abazi@tuni.fi                                    #
+####################################################################
+
+Welcome to snake apple eater game project.
+Documentation contents:
+-Implemented basic features
+-Implemented extra features
+-Instructions on how to play
+-Gameflow of snake apple eater
+-Design choices of snake apple eater
+
+Implemented basic features:
+-(tl;dr these are all implemented)
+-The program asks for the seed value of the random number generator.
+-The program enables different sizes for the gameboard.
+-To play the game, the game area and snake are shown for the user.
+-The game area shows a snake (at first only its head) and food.
+-The head, tail and the middle of the body of the snake differ from each other
+-The snake grows when it eats.
+-It is possible to select a move direction of the snake
+-The snake moves automatically into the latest selected direction.
+-The game informs about a win/loss.
+-It is possible to start the game again (reset).
+-Game is documented
+
+Implemented extra features:
+-The user interface provides a possibility to adjust the size of the game grid. 10p
+-The game has a timer telling the time spent so far. 5p
+-The player can collect points based on their skills. 10p
+-The speed of the snake increases whenever getting points. 5p
+-The background color of the user interface changes, when the player wins or loses the game. 10p
+-The game has a pause button, from which the user can pause the timer. 10p
+-The user can set their own goal for points. 5p
+-Audio playback. 10p
+-Total max score from extra features = 10+5+10+5+10+10+5+10 = 65p
+********
+Audio playback functionality shown in Snake_gui Audio Showcase.mp4
+as per instructed by Maarit Harsu
+-Please note that that the audio of the game recorded very loudly for some reason,
+ please do heed to the warning in video about turning volume down a little bit when instructed
+******** 
+
+Instructions on how to play:
+User chooses classic or target gamemode with buttons
+Game starts with target mode by default
+Play button starts (and resets) the game
+Pause pauses and unpauses the game
+Spinboxes set the game boundaries
+close button closes the program
+Inputs
+-w up
+-s down
+-a left
+-d right
+-r reset/play
+
+Gameflow of snake apple eater:
+Game starts with a choice of game style, classic full area snake, or more "modern" target
+value snake game. User can input a set target value which to go after, max value of the target
+is one point less than the classic snake, because otherwise it really wouldn't be a target snake
+game if the scores are the same?
+
+If the user doesn't make a choice game starts as target value snake game
+with target value of 1. Truly the easy mode of gaming. After losing or winning user can set
+a new game style to be played. If user wants to adjust the target value higher after adjusting
+the width and height target mode button should be pressed again to assign new max value for
+target value.
+
+When the game starts spin boxes and game mode buttons are disabled, since they would otherwise
+just crash the game. During the game cycle user can pause/unpause the game with pause button.
+User can also reset the game during the game cycle. On each 1000ms(=1s) passed the game timer increments with one
+second, this is reseted when each round is started.
+
+During the game snake moves by timer which moves it to last given direction. When player inputs opposite direction
+of the current snake movement the snake continues it's movement to it's last direction. NOTE this can be overbuffered
+with rapid "diagonal" inputs, which halt the snake for ~2 timeouts after the snake starts to move again to which 
+ever button was lastly pressed. Basically this means that if snake is moving up and you press a(left) and then 
+quickly press s(down) the snake will halt it's movement, until you give a new direction for the snake. This happens
+probably because the gameboard api and the gameboard in gui have a small input lag between them which causes the 
+graphical snake "think" that it is already in a location where it can take the down movement, when in reality the
+timer hasn't changed it's location. Not a gamebreaking bug thankfully.
+
+If the snake hits an apple game's score increases by one, which shows that the user has enough skills to 
+navigate to the apples. In this case snake's speed is incremented by a fair bit, until snake's speed hits spesific 
+value If the snake hits itself or a wall it dies and game has to be restarted for snake to be able 
+to play again.
+
+In case that the user gets enough game points or fills the game area with the snake game is won. Different
+game status (game started, paused, game continued, won by target point, won classic game and snake is dead)
+is shown depending the situation of the game flow. If the player wins with targer points yellow backsreen is shown,
+if the game is won in classic mode green backscreen is shown and in case of losing a red screen is shown. This 
+screen is reverted to initial OS background color when game is restarted.
+
+When the user has had enough of the game close button can be used to exit the game gracefully.
+
+Design choices of snake apple eater:
+Main idea was that the game area with it's graphical elements is drawn only after the play button is pressed and
+this was implemented with success.
+When I started to build the program I wanted to keep the backend as close as possible to the original one, so only
+getters were used in gameboard.hh and point.hh to get the crucial variables to the mainwindow. This way I feel like
+I managed to keep the GUI and backend as far away as possible from each other, with only mainwindow (and GUI in
+general) knowing about the backend classes. This means that the backend classes don't know about the GUI at all. 
+This principle was followed during the programming.
+
+Basic idea of gui is to navigate the user to pick correct choices from the menu system with disabling and hiding 
+buttons and spinboxes which might cause crashes when picked in wrong game sequence. When this idea was implemented
+snake movement was implemented. Game area is fixed to certain point via Qt graphics methods and snake's and apple's
+movement is fixed to the same coordinates and absolute movement is used to keep track of the snake and apple in the
+graphical play area. This means that the gui play area is always in the same "state" and location as the backend
+gameboards gameboard. This also fixes the snake and apple to fix in the same coordinate system. To connect the
+backend gameboard to graphical gameboard an unique pointer is used to ease the memory handling.
+
+To move the snake with the snaketimertimeout graphical snake pointer is deleted with manual memory handling and then
+it's redrawn in the next location determined by the direction. This method was used since it felt natural training
+to pointer usage. Initially the snake vector pointer was meant to be an unique pointer. More on this in the last 
+chapter.
+
+As the game are setupping it was quite a logical choice to use spinboxes, since they can only be used with number
+values, lessening the chance of usererror. But since spinboxes might cause crash if accessed during the snake moving
+they are disabled when not needed, as are the game mode buttons disabled. Since I wanted the game area to be changed
+between game cycles spin boxes were again used.
+
+Most of the graphical UI altering is done with void functions which manipulate the GUI's values and sets the widgets
+to correct state depending on the state of the game. This felt the natural choice for a beginner programmer like
+myself. Most functions are private encapsulated functions (as are most of the variables) to maintain correct OOP
+programming fundamentals.
+
+At one point the snake apple eater had an audio player with audio load from any possible file path, stop audio and
+play audio button implemented. As stated I used Qt 6.3.1 as dev platform which had QtMultiMedia library in use,
+but sadly the game needs to be able to be compiled/built with Qt 6.1.1 which doesn't have any sort QtMultiMedia
+library in it. So the audioplayer and backround music implementation was deleted from the final product.
+
+All in all the project was very fun to program. Sadly other courses deadlines and exams came breathing in my neck 
+so I had to stop developing extra features to make more room in my schedule for rehearsing other exams. 
+
+Now you might want to warn about using unique pointers and manual pointers mixed in same project, but this project
+has a good reason for this decision. When snakebodyvector was an unique pointer there was a bug in memory handling
+which was found out to be an underlying memory handle problem of Qt. After consulting an employee who works at Qt
+company manual pointers were found out to be an exact fix for the problem. So that's why there's two style's of
+pointers used.
+
+END
